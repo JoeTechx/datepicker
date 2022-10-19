@@ -190,6 +190,7 @@ class DatePicker extends HTMLElement {
   toggleButton = null;
   calendarDropDown = null;
   calendarDateElement = null;
+  calendarDaysContainer = null;
 
   constructor() {
     super();
@@ -223,12 +224,16 @@ class DatePicker extends HTMLElement {
     this.calendarDateElement = this.shadow.querySelector("h4");
     const [prevBtn, calendarDateElement, nextButton] = this.calendarDropDown.querySelector(".header").children;
     this.calendarDateElement = calendarDateElement;
+    this.calendarDaysContainer = this.calendarDropDown.querySelector('.month-days');
 
 
     this.toggleButton.addEventListener("click", () => this.toggleCalendar());
     prevBtn.addEventListener("click", () => this.prevMonth());
     nextButton.addEventListener("click", () => this.nextMonth());
-    document.addEventListener("click", () => this.handleClickOut(e));
+    document.addEventListener("click", (e) => this.handleClickOut(e));
+
+  
+    this.getMonthDaysGrid();
   }
 
   toggleCalendar(visible = null) {
@@ -280,6 +285,33 @@ class DatePicker extends HTMLElement {
     .map(weekDay => `<span>${weekDay.substring(0, 3)}</span>`)
     .join("")
   }
+
+  getMonthDaysGrid() {
+    const firstDayOfTheMonth = this.calendar.month.getDay(1);
+    const totalLastMonthFinalDays = firstDayOfTheMonth.dayNumber - 1;
+    const totalDays = this.calendar.month.numberOfDays + totalLastMonthFinalDays;
+    const monthList = Array.from({length: totalDays})
+
+    for(let i = totalLastMonthFinalDays; i < totalDays; i++){
+      monthList[i] = this.calendar.month.getDay(i + 1 - totalLastMonthFinalDays);
+    }
+
+    console.log(monthList);
+    
+  }
+  
+ updateMonthDays() {
+  this.calendarDaysContainer.innerHTML = '';
+ this.getMonthDaysGrid().forEach(day => {
+const el = document.createElement('button');
+el.className = 'month-day';
+if(day){
+  el.textContent = day.day
+}
+
+this.calendarDaysContainer.appendChild(el);
+ })
+ }
   static get position() {
     return ["top", "left", "bottom", "right"];
   }
@@ -402,6 +434,7 @@ font-weight: bold;
     <button type="button" class="prev-month" aria-label="next month"></button>
 </div>
 <div class="week-days">${this.getWeekDaysElementStrings()}</div>
+<div class="month-days"></div>
   </div>
   `;
   }
