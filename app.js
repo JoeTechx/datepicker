@@ -222,32 +222,32 @@ class DatePicker extends HTMLElement {
     this.toggleButton = this.shadow.querySelector(".date-toggle");
     this.calendarDropDown = this.shadow.querySelector(".calendar-dropdown");
     this.calendarDateElement = this.shadow.querySelector("h4");
-    const [prevBtn, calendarDateElement, nextButton] = this.calendarDropDown.querySelector(".header").children;
+    const [prevBtn, calendarDateElement, nextButton] =
+      this.calendarDropDown.querySelector(".header").children;
     this.calendarDateElement = calendarDateElement;
-    this.calendarDaysContainer = this.calendarDropDown.querySelector('.month-days');
-
+    this.calendarDaysContainer =
+      this.calendarDropDown.querySelector(".month-days");
 
     this.toggleButton.addEventListener("click", () => this.toggleCalendar());
     prevBtn.addEventListener("click", () => this.prevMonth());
     nextButton.addEventListener("click", () => this.nextMonth());
     document.addEventListener("click", (e) => this.handleClickOut(e));
 
-  
     this.getMonthDaysGrid();
   }
 
   toggleCalendar(visible = null) {
-    if(visible === null) {
-      this.calendarDropDown.classList.toggle('visible');
-    } else if(visible) {
-      this.calendarDropDown.classList.add('visible');
+    if (visible === null) {
+      this.calendarDropDown.classList.toggle("visible");
+    } else if (visible) {
+      this.calendarDropDown.classList.add("visible");
     } else {
-      this.calendarDropDown.classList.remove('visible');
+      this.calendarDropDown.classList.remove("visible");
     }
-    
-    this.visible = this.calendarDropDown.className.includes('visible');
 
-    if(!this.isCurrentCalendarMonth()) {
+    this.visible = this.calendarDropDown.className.includes("visible");
+
+    if (!this.isCurrentCalendarMonth()) {
       this.calendar.goToDate(this.date.monthNumber, this.date.year);
       this.updateHeaderText();
     }
@@ -264,54 +264,61 @@ class DatePicker extends HTMLElement {
   }
 
   updateHeaderText() {
-    this.calendarDateElement.textContent = 
-     `${this.calendar.month.name}, ${this.calendar.year}`
+    this.calendarDateElement.textContent = `${this.calendar.month.name}, ${this.calendar.year}`;
   }
 
   isCurrentCalendarMonth() {
-    return this.calendar.month.number === this.date.monthNumber && 
-    this.calendar.year === this.date.year;
+    return (
+      this.calendar.month.number === this.date.monthNumber &&
+      this.calendar.year === this.date.year
+    );
   }
 
-
   handleClickOut(e) {
-    if(this.visible && (this !== e.target)) {
+    if (this.visible && this !== e.target) {
       this.toggleCalendar(false);
     }
   }
 
-  getWeekDaysElementStrings(){
+  getWeekDaysElementStrings() {
     return this.calendar.weekDays
-    .map(weekDay => `<span>${weekDay.substring(0, 3)}</span>`)
-    .join("")
+      .map((weekDay) => `<span>${weekDay.substring(0, 3)}</span>`)
+      .join("");
   }
 
   getMonthDaysGrid() {
     const firstDayOfTheMonth = this.calendar.month.getDay(1);
     const totalLastMonthFinalDays = firstDayOfTheMonth.dayNumber - 1;
     const totalDays = this.calendar.month.numberOfDays + totalLastMonthFinalDays;
-    const monthList = Array.from({length: totalDays})
+    const monthList = Array.from({length: totalDays});
 
-    for(let i = totalLastMonthFinalDays; i < totalDays; i++){
-      monthList[i] = this.calendar.month.getDay(i + 1 - totalLastMonthFinalDays);
+    for(let i = totalLastMonthFinalDays; i < totalDays; i++) {
+      monthList[i] = this.calendar.month.getDay(i + 1 - totalLastMonthFinalDays)
     }
 
     console.log(monthList);
-    
   }
-  
- updateMonthDays() {
-  this.calendarDaysContainer.innerHTML = '';
- this.getMonthDaysGrid().forEach(day => {
-const el = document.createElement('button');
-el.className = 'month-day';
-if(day){
-  el.textContent = day.day
-}
 
-this.calendarDaysContainer.appendChild(el);
- })
- }
+updateMonthDays() {
+  this.calendarDaysContainer.innerHTML = '';
+
+  this.getMonthDaysGrid().forEach(day => {
+    const mG = document.createElement('button');
+    mG.className = 'month-day';
+    if(day) {
+      mG.textContent = day.date;
+
+      if(day.monthNumber === this.calendar.month.number){
+        mG.classList.add('current');
+      }
+
+    }
+
+    this.calendarDaysContainer.appendChild(mG)
+
+    console.log(monthGrid);
+  })
+}
   static get position() {
     return ["top", "left", "bottom", "right"];
   }
@@ -416,6 +423,28 @@ font-weight: bold;
   text-transform: uppercase;
   font-weight: 600;
 }
+
+.month-days{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-gap: 5px;
+}
+
+.month-day{
+  padding: 8px 5px;
+  background: #c7c9d3;
+  color: #fff;
+  display: flex;
+  opacity:0;
+  justify-content: center;
+  border-radius: 2px;
+  cursor: pointer;
+  border: none;
+}
+
+.month-day.current{
+  opacity: 1;
+}
   `;
   }
   render() {
@@ -423,23 +452,24 @@ font-weight: bold;
     const date = this.date.format(this.format);
     this.shadow.innerHTML = `
   <style>${this.style}</style>
-  <button type = "button" class= "date-toggle">${date}</button>
-  <div class="calendar-dropdown ${this.visible ? "visible" : ""} ${this.position}">
-<div class="header">
-    <button type="button" class="prev-month" aria-label="previous month"></button>
-<h4>
- ${monthYear}
-</h4>
-
-    <button type="button" class="prev-month" aria-label="next month"></button>
-</div>
-<div class="week-days">${this.getWeekDaysElementStrings()}</div>
-<div class="month-days"></div>
+  <button type="button" class="date-toggle">${date}</button>
+  <div class="calendar-dropdown ${this.visible ? "visible" : ""} ${
+      this.position
+    }">
+    <div class="header">
+        <button type="button" class="prev-month" aria-label="previous month"></button>
+        <h4 tabindex="0" aria-label="current month ${monthYear}">
+          ${monthYear}
+        </h4>
+        <button type="button" class="prev-month" aria-label="next month"></button>
+    </div>
+    <div class="week-days">${this.getWeekDaysElementStrings()}</div>
+    <div class="month-days"></div>
   </div>
   `;
   }
 }
 
 customElements.define("date-picker", DatePicker);
-const picker = new DatePicker();
-console.log(picker);
+// const picker = new DatePicker();
+// console.log(picker);
